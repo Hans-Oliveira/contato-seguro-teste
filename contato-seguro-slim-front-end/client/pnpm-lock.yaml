@@ -14,6 +14,9 @@ importers:
       '@ant-design/v5-patch-for-react-19':
         specifier: ^1.0.3
         version: 1.0.3(antd@5.24.9(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@brazilian-utils/brazilian-utils':
+        specifier: ^2.5.0
+        version: 2.5.0
       antd:
         specifier: ^5.24.9
         version: 5.24.9(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -244,6 +247,10 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@brazilian-utils/brazilian-utils@2.5.0':
+    resolution: {integrity: sha512-rWXbTGN+8irKr5fe6/mtZ/vc/qoDBGIR57RzuwGZ90uV4/SxG00ehPo77RYviOhSzenKbYbEMDMyd8GHjmF6sg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   '@emotion/hash@0.8.0':
     resolution: {integrity: sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow==}
@@ -2265,6 +2272,8 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@brazilian-utils/brazilian-utils@2.5.0': {}
 
   '@emotion/hash@0.8.0': {}
 
