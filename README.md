@@ -87,11 +87,14 @@ Para manter a consistência com o padrão existente do projeto, as novas funcion
 
 ## 5. Riscos e Pontos de Atenção
 
-* Formato do CPF na API: A API não aceita pontos ou traços no CPF e exige exatamente 11 dígitos. Vou exibir formatado na tela para facilitar a leitura, mas limpar a pontuação (`replace(/\D/g, '')`) antes de enviar na requisição.
 * CPF já cadastrado (erro 409): Se o usuário tentar cadastrar um CPF repetido, a API retorna erro `409`. Vou tratar esse retorno para mostrar um aviso claro na tela em vez de uma mensagem genérica.
 * Mesma pessoa duas vezes no mesmo relato: Para evitar que o usuário tente vincular alguém que já está na lista (o que também gera erro `409`), vou desabilitar ou filtrar no `<Select>` as pessoas que já fazem parte daquele relato.
 * Atualização do status de anonimato: Quando um relatante (`whistleblower`) for adicionado ou removido, a tabela de relatos precisa atualizar na hora para mudar entre Anônimo e Identificado sem depender de F5 na página.
 * Formato da data de nascimento: O `DatePicker` do Ant Design trabalha com objetos do `dayjs`, enquanto a API espera uma string `YYYY-MM-DD`. Vou converter essa data tanto ao enviar o formulário quanto ao preencher o modal de edição.
+* Reutilização de CPF após exclusão (Soft Delete): Durante os testes, identifiquei que ao excluir uma pessoa e tentar cadastrá-la novamente com o mesmo CPF, a API retorna erro `500` (`Duplicate entry` no MySQL). Isso ocorre porque o back-end usa `SoftDeletes` (mantendo o registro no banco com `deleted_at` preenchido), mas a coluna `cpf` continua com índice `UNIQUE` ativo. Como a regra da etapa impede alterações no back-end, tratei os erros `409` e `500` de duplicidade nos modais de pessoa para exibir um aviso claro ao usuário no lugar da mensagem técnica do servidor.
+* Formato e validação do CPF: A API exige apenas 11 dígitos numéricos (sem pontuação). Para garantir maior integridade dos dados sem alterar o back-end, adicionei a biblioteca `@brazilian-utils/brazilian-utils` para formatar o CPF na tabela (`formatCPF`) e validar dígitos verificadores reais no formulário (`isValidCPF`), mantendo o envio apenas com os 11 números.
+* Digitação do CPF no formulário: Se o usuário digitar pontos, traços ou colar o CPF já formatado, o próprio campo limpa a pontuação na hora e mantém só os 11 números. 
+* Bloqueio de data de nascimento futura: O campo de data de nascimento bloqueia dias futuros no calendário e exibe um aviso caso o usuário digite uma data posterior ao dia atual.
 
 ---
 
@@ -102,6 +105,7 @@ Para manter a consistência com o padrão existente do projeto, as novas funcion
    * Usuário consegue cadastrar nova pessoa com dados válidos.
    * Sistema impede o cadastro caso o CPF seja inválido ou já exista no banco.
    * Usuário consegue editar e remover pessoas.
+   * Testes unitários com Vitest: Criei testes em `person.services.test.ts` cobrindo os 5 serviços (CRUD) da API de Pessoas para garantir as rotas e métodos HTTP corretos (executáveis via `pnpm test`).
 2. Épico 2:
    * Usuário consegue abrir os envolvidos de qualquer relato.
    * Sistema exibe claramente a lista de envolvidos com seus papéis diferenciados.
