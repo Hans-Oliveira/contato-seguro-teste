@@ -14,20 +14,27 @@ import { App } from 'antd';
 
 import { handleServiceError, hasServiceError } from '@domain/@shared/service.helper';
 import { UnknownContextError } from '@domain/@shared/unknown-context-error';
+import { listInvolvements } from '@domain/involvement/api/list-involvements.service';
 
 import { listRecords } from './api/list-records.service';
 import type { Record } from './record.type';
+
+type AnonymityMap = { [recordId: number]: boolean };
 
 type Value = {
     records: Record.Model[];
     record: Record.Model | null;
     recordId: Record.Model['id'] | null;
     setRecordId: Dispatch<SetStateAction<Value['recordId']>>;
+    anonymityMap: AnonymityMap;
+    setRecordAnonymity: (id: number, isAnonymous: boolean) => void;
     isLoading: boolean;
     isCreateModalVisible: boolean;
     setIsCreateModalVisible: Dispatch<SetStateAction<Value['isCreateModalVisible']>>;
     isEditModalVisible: boolean;
     setIsEditModalVisible: Dispatch<SetStateAction<Value['isEditModalVisible']>>;
+    isInvolvementsModalVisible: boolean;
+    setIsInvolvementsModalVisible: Dispatch<SetStateAction<Value['isInvolvementsModalVisible']>>;
     fetchRecords: () => Promise<void>;
 };
 
@@ -41,22 +48,44 @@ export function RecordsContextProvider({ children }: Props) {
     const [isLoading, setIsLoading] = useState<Value['isLoading']>(true);
     const [records, setRecords] = useState<Value['records']>([]);
     const [recordId, setRecordId] = useState<Record.Model['id'] | null>(null);
+    const [anonymityMap, setAnonymityMap] = useState<AnonymityMap>({});
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isInvolvementsModalVisible, setIsInvolvementsModalVisible] = useState(false);
 
     const app = App.useApp();
+
+    const setRecordAnonymity = useCallback((id: number, isAnonymous: boolean) => {
+        setAnonymityMap(prev => ({ ...prev, [id]: isAnonymous }));
+    }, []);
 
     const fetchRecords = useCallback(async () => {
         setIsLoading(true);
 
         const response = await listRecords();
 
-        setIsLoading(false);
-
-        if (hasServiceError(response))
+        if (hasServiceError(response)) {
+            setIsLoading(false);
             return handleServiceError(app, response);
+        }
 
-        setRecords(response.data.records);
+        const loadedRecords = response.data.records;
+        setRecords(loadedRecords);
+
+        const involvementResponses = await Promise.all(
+            loadedRecords.map(r => listInvolvements(r.id)),
+        );
+
+        const nextMap: AnonymityMap = {};
+        loadedRecords.forEach((r, index) => {
+            const res = involvementResponses[index];
+            if (!hasServiceError(res)) {
+                nextMap[r.id] = res.data.is_anonymous;
+            }
+        });
+        setAnonymityMap(nextMap);
+
+        setIsLoading(false);
     }, [app]);
 
     useEffect(() => {
@@ -80,10 +109,14 @@ export function RecordsContextProvider({ children }: Props) {
         record,
         recordId,
         setRecordId,
+        anonymityMap,
+        setRecordAnonymity,
         isCreateModalVisible,
         setIsCreateModalVisible,
         isEditModalVisible,
         setIsEditModalVisible,
+        isInvolvementsModalVisible,
+        setIsInvolvementsModalVisible,
         fetchRecords,
     };
 

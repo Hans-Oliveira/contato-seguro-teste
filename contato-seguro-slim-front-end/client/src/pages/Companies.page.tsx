@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 
 import { Button, Row, type TableColumnsType, Typography } from 'antd';
 
+import { formatCNPJ } from '@brazilian-utils/brazilian-utils';
 import { Show } from '@domain/@shared/Show';
 import { Table } from '@domain/@shared/Table';
 import { CompaniesContextProvider } from '@domain/company/Companies.context';
@@ -23,6 +24,7 @@ const COLUMNS: TableColumnsType<Company.Model> = [
     {
         title: 'CNPJ',
         dataIndex: 'cnpj',
+        render: (value: string) => formatCNPJ(value),
     },
     {
         title: 'E-mail',

@@ -1,15 +1,16 @@
 import { Fragment } from 'react';
 
-import { Button, Row, type TableColumnsType, Typography } from 'antd';
+import { Button, Row, type TableColumnsType, Tag, Typography } from 'antd';
 
 import { Show } from '@domain/@shared/Show';
 import { Table } from '@domain/@shared/Table';
 import { CompaniesContextProvider } from '@domain/company/Companies.context';
+import { InvolvementsModal } from '@domain/involvement/components/InvolvementsModal';
 import { CreateRecordModal } from '@domain/record/components/CreateRecordModal';
 import { EditRecordModal } from '@domain/record/components/EditRecordModal';
 import { RecordsActionsCell } from '@domain/record/components/RecordsActionsCell';
 import type { Record } from '@domain/record/record.type';
-import { RecordsContextProvider } from '@domain/record/Records.context';
+import { RecordsContextProvider, useRecordsContext } from '@domain/record/Records.context';
 
 const STATUS_LABELS: Record<Record.Status, string> = {
     awaiting_investigation: 'Aguardando investigação',
@@ -17,6 +18,19 @@ const STATUS_LABELS: Record<Record.Status, string> = {
     resolved: 'Resolvido',
     archived: 'Arquivado',
 };
+
+function RecordIdentificationCell({ recordId }: { recordId: number }) {
+    const { anonymityMap } = useRecordsContext();
+    const isAnonymous = anonymityMap[recordId];
+
+    if (isAnonymous === undefined) return null;
+
+    return (
+        <Tag color={isAnonymous ? 'orange' : 'green'}>
+            {isAnonymous ? 'Anônimo' : 'Identificado'}
+        </Tag>
+    );
+}
 
 const COLUMNS: TableColumnsType<Record.Model> = [
     {
@@ -34,6 +48,12 @@ const COLUMNS: TableColumnsType<Record.Model> = [
         render: value => STATUS_LABELS[value as Record.Status] ?? value,
     },
     {
+        title: 'Identificação',
+        dataIndex: 'id',
+        key: 'identification',
+        render: id => <RecordIdentificationCell recordId={id} />,
+    },
+    {
         render: (_, record) => <RecordsActionsCell record={record} />,
     },
 ];
@@ -46,9 +66,14 @@ export function Records() {
                     {({
                         isLoading,
                         records,
+                        record,
+                        setRecordId,
+                        setRecordAnonymity,
                         setIsCreateModalVisible,
                         isCreateModalVisible,
                         isEditModalVisible,
+                        isInvolvementsModalVisible,
+                        setIsInvolvementsModalVisible,
                     }) => (
                         <Fragment>
                             <main>
@@ -78,6 +103,19 @@ export function Records() {
 
                             <Show when={isEditModalVisible}>
                                 <EditRecordModal />
+                            </Show>
+
+                            <Show when={isInvolvementsModalVisible && !!record}>
+                                <InvolvementsModal
+                                    record={record!}
+                                    onClose={() => {
+                                        setIsInvolvementsModalVisible(false);
+                                        setRecordId(null);
+                                    }}
+                                    onChange={isAnonymous => {
+                                        if (record) setRecordAnonymity(record.id, isAnonymous);
+                                    }}
+                                />
                             </Show>
                         </Fragment>
                     )}
