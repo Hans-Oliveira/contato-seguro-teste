@@ -83,6 +83,12 @@ Para manter a consistência com o padrão existente do projeto, as novas funcion
     * Botão "Vincular Envolvido".
     * Pessoas já vinculadas ao relato são desabilitadas na lista de seleção para evitar duplicação.
 
+### 4.4. Dashboard (Indicadores)
+* Aproveitei a tela inicial para adicionar indicadores reais da API usando componentes do próprio Ant Design (`Statistic`, `Progress`, `List`):
+  * Cards de resumo com totais de Empresas, Pessoas, Relatos e Taxa de Anonimato (%).
+  * Barras de progresso mostrando a distribuição dos relatos por status.
+  * Lista dos relatos recentes já destacando a tag de Anônimo ou Identificado.
+
 ---
 
 ## 5. Riscos e Pontos de Atenção
