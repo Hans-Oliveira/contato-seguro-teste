@@ -29,8 +29,15 @@ export function CreateCompanyModal() {
 
         setIsSending(false);
 
-        if (hasServiceError(response))
-            return handleServiceError(app, response);
+        if (hasServiceError(response)) {
+            return handleServiceError(app, response, err => {
+                if (err.statusCode === 409)
+                    return 'Já existe uma empresa cadastrada com este CNPJ.';
+                if (err.statusCode === 500 && err.error.description.includes('Duplicate entry'))
+                    return 'Este CNPJ pertence a um cadastro excluído anteriormente e não pode ser reutilizado.';
+                return null;
+            });
+        }
 
         close();
         fetchCompanies();
